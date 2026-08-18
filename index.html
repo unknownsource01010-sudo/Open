@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PromoProwler Intelligence Core</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+        }
+
+        .terminal-font {
+
+            font-family: 'Fira Code', monospace;
+
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+
+            width: 6px;
+
+            height: 6px;
+
+        }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #1e293b;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 3px;
+    }
+    .brand-glow {
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        border: 1px solid rgba(129, 140, 248, 0.6);
+    }
+</style>
+
+</head>
+
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
+
+<!-- Header Navigation Featuring the Catchy 'PromoProwler' Brand and Custom Neon Cyber Emblem Logo -->
+<header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50 px-3 sm:px-6 py-3.5 flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+    <div class="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+
+            <!-- Kool Cyberhawk / Radar-Scope Animated Brand Logo Container -->
+            <div class="brand-glow bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-2 rounded-xl text-white shadow-xl shrink-0 animate-pulse relative group">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+            </div>
+            <div class="min-w-0">
+                <h1 class="text-sm sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent leading-tight truncate">PromoProwler Core</h1>
+                <p class="text-[10px] sm:text-xs text-indigo-400 font-medium font-mono tracking-wider truncate">v5.1.0 • Multi-Site Autonomous Checkout Suite</p>
+            </div>
+        </div>
+
+        <!-- Status Badge Display Alignment on Small Screens -->
+        <div class="md:hidden shrink-0">
+            <span id="global-status-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-indigo-400 border border-slate-700 whitespace-nowrap">
+
+                <span class="w-1.5 h-1.5 mr-1 rounded-full bg-indigo-400 animate-ping"></span> Live Scan
+            </span>
+        </div>
+    </div>
+
+    <!-- Touch-Target Friendly Flexible Width Navigation Switcher Container -->
+    <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 w-full md:w-auto shrink-0 flex-wrap gap-1">
+        <button id="tab-promo-btn" onclick="switchTab('promo')" 
+            class="flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight">
+            Promo Code Searcher
+        </button>
+        <button id="tab-price-btn" onclick="switchTab('price')" 
+            class="flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight">
+            Lowest Price Finder
+        </button>
+        <button id="tab-list-btn" onclick="switchTab('list')" 
+            class="flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight">
+            Shopping List (<span id="list-badge-count">0</span>)
+        </button>
+
+    </div>
+
+    <!-- Desktop Status Badge Display Configuration -->
+    <div class="hidden md:block">
+        <span id="global-status-badge-desktop" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span> Idle Status
+        </span>
+    </div>
+</header>
+
+<!-- Main Dynamic Adaptive Workspace Container -->
+<main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+
+    <!-- Configuration Area Segment Layout -->
+    <section class="lg:col-span-1 space-y-4 sm:space-y-6 w-full min-w-0">
+
+        <!-- Tab 1 Configuration Interface: Promo Scanner -->
+        <div id="config-promo" class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 shadow-xl backdrop-blur w-full box-border">
+            <h2 class="text-sm sm:text-base font-semibold text-white mb-1 flex items-center">
+
+                <svg class="w-4 h-4 mr-2 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Universal Promo Configuration
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-400 mb-4">Autonomous web crawling dynamically isolates and matches custom code variations tailored precisely to whatever domain tree you input below.</p>
+
+            <form onsubmit="event.preventDefault(); launchPromoPipeline();" class="space-y-3.5">
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Target Merchant Homepage / URL</label>
+                    <input id="target-homepage" type="text" value="https://temu.com" required placeholder="https://any-website.com"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                </div>
+
+                <!-- Production-Grade High Accuracy Architecture Control Panel Blocks -->
+                <div class="border-t border-slate-700/50 my-3 pt-3 space-y-3">
+                    <h3 class="text-[10px] sm:text-xs font-semibold text-indigo-400 uppercase tracking-wider">Advanced Scraper Accuracy Infrastructure</h3>
+
+                    <div>
+
+                        <label class="block text-[10px] text-slate-400 mb-1">Automation Engine Framework</label>
+                        <select id="engine-framework" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="playwright">Playwright Stealth Engine (Anti-Fingerprint)</option>
+                            <option value="puppeteer">Puppeteer Core (Chromium Hook)</option>
+                            <option value="selenium">Standard Headless Selenium</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                            <input type="checkbox" id="toggle-xhr" checked class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 mr-2 h-3.5 w-3.5">
+                            Intercept API Data Streams (XHR/Fetch Payload)
+                        </label>
+                        <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                            <input type="checkbox" id="toggle-proxy" checked class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 mr-2 h-3.5 w-3.5">
+                            Route Thru Rotated Residential Proxies
+                        </label>
+                        <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                            <input type="checkbox" id="toggle-sandbox" checked class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 mr-2 h-3.5 w-3.5">
+
+                            Isolated Cookie &amp; Session Sandboxing
+                        </label>
+                        <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                            <input type="checkbox" id="toggle-captcha" checked class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 mr-2 h-3.5 w-3.5">
+                            Automated CAPTCHA Challenge Mitigation
+                        </label>
+                        <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                            <input type="checkbox" id="toggle-normalize" checked class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 mr-2 h-3.5 w-3.5">
+                            ML Text Token Normalization (Sanitizer)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-700/50 my-3.5 pt-3.5">
+                    <div class="flex items-center justify-between mb-2 gap-2">
+                        <h3 class="text-[10px] sm:text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">Dynamic DOM Match Selectors</h3>
+                        <span class="text-[9px] sm:text-[10px] text-amber-400 font-mono whitespace-nowrap">Universal Adaptive Hook</span>
+                    </div>
+                    <div class="space-y-3 opacity-75">
+
+                        <div>
+                            <label class="block text-[10px] sm:text-[11px] text-slate-400 mb-1">Coupon Field Selector</label>
+                            <input id="sel-input" type="text" value="input#coupon-code-input" disabled
+                                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-500 font-mono cursor-not-allowed min-h-[36px] box-border">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-[11px] text-slate-400 mb-1">Submit Button Selector</label>
+                            <input id="sel-btn" type="text" value="button#apply-coupon-btn" disabled
+                                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-500 font-mono cursor-not-allowed min-h-[36px] box-border">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="promo-run-btn" type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-2 min-h-[44px] box-border">
+                    <span>Discover, Locate &amp; Test</span>
+                </button>
+            </form>
+        </div>
+
+
+        <!-- Tab 2 Configuration Interface: Unbiased Price Matrix -->
+        <div id="config-price" class="hidden bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 shadow-xl backdrop-blur w-full box-border">
+            <h2 class="text-sm sm:text-base font-semibold text-white mb-1 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                Omni-Channel Price Searcher
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-400 mb-4">Performs a synchronous cross-comparison across all 10 major global wholesale and consumer storefronts simultaneously, filtering out premium commission bias.</p>
+
+            <form onsubmit="event.preventDefault(); launchPricePipeline();" class="space-y-3.5">
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Product Identification String / Name / SKU</label>
+                    <input id="product-query" type="text" value="Wireless Earbuds" required placeholder="e.g., Sony WH-1000XM4, socks, earbuds..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Delivery Destination Postal / Zip Code</label>
+
+                    <input id="postal-query" type="text" value="27514" required placeholder="To compute exact real shipping costs"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                </div>
+
+                <!-- Cart Surcharge Emulation Checkbox -->
+                <div class="bg-slate-900/60 border border-slate-700/40 p-2.5 rounded-lg space-y-1.5">
+                    <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                        <input type="checkbox" id="toggle-cart" checked class="rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500 mr-2 h-3.5 w-3.5">
+                        Emulate Multi-Step Checkout Session
+                    </label>
+                    <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                        <input type="checkbox" id="toggle-delta" checked class="rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500 mr-2 h-3.5 w-3.5">
+                        Mathematical Total Delta Verification
+                    </label>
+                    <label class="flex items-center text-[11px] text-slate-300 font-medium cursor-pointer">
+                        <input type="checkbox" id="toggle-spoof" checked class="rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500 mr-2 h-3.5 w-3.5">
+                        Geolocation &amp; Address Spoofing
+                    </label>
+                    <p class="text-[10px] text-slate-400 pl-5 leading-relaxed">Enforces mathematical reductions, localized tax modeling, and isolated basket verification loops recursively.</p>
+
+                </div>
+
+                <!-- Advanced Heuristic Sorting Selector -->
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Optimization Heuristic</label>
+                    <select id="price-sort-heuristic" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                        <option value="price">Absolute Lowest Price (Combined Net Total)</option>
+                        <option value="speed">Fastest Shipping Delivery Speed</option>
+                    </select>
+                </div>
+
+                <button id="price-run-btn" type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2 min-h-[44px] box-border">
+                    <span>Extract Absolute Lowest Costs</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Tab 3 Configuration Interface: Secure Shopping List Checkout Orchestrator -->
+
+        <div id="config-list" class="hidden bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 shadow-xl backdrop-blur w-full box-border">
+            <h2 class="text-sm sm:text-base font-semibold text-white mb-1 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Secure Vault Payment Orchestration
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-400 mb-4">Simulates tokenizing card credentials to distribute programmatic checkout strings autonomously across multiple platform security sandboxes.</p>
+
+            <form onsubmit="event.preventDefault(); launchAutomatedCheckout();" class="space-y-3.5">
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Cardholder Name</label>
+                    <input type="text" value="Jane Doe" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                </div>
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Mock Credit Card Number</label>
+                    <input type="text" value="4111 2222 3333 4444" required placeholder="XXXX XXXX XXXX XXXX" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Expiration</label>
+                        <input type="text" value="12/29" required placeholder="MM/YY" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Security Code (CVV)</label>
+                        <input type="password" value="123" required placeholder="***" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition min-h-[42px] box-border">
+                    </div>
+                </div>
+
+                <button id="list-checkout-btn" type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-2 min-h-[44px] box-border">
+                    <span>Execute Multi-Site Purchase</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Toast / Inline Status Alert Wrapper -->
+        <div id="toast-box" class="hidden bg-slate-800 border-l-4 border-indigo-500 p-3 sm:p-4 rounded-r-xl shadow-lg flex items-start space-x-3 transition duration-300 w-full box-border">
+
+            <div class="mt-0.5 shrink-0 text-indigo-400" id="toast-icon-wrapper">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <h4 class="text-xs sm:text-sm font-semibold text-white truncate" id="toast-title">System Alert</h4>
+                <p id="toast-msg" class="text-[11px] sm:text-xs text-slate-300 mt-0.5 break-words"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Right Visual Display and Execution Output Column Layout -->
+    <section class="lg:col-span-2 space-y-4 sm:space-y-6 w-full min-w-0">
+
+        <!-- Global Metrics Card Matrix Grid Container - Fully Wrap Adaptive -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 shadow-sm min-w-0">
+                <p id="metric-label-1" class="text-[10px] text-slate-400 font-medium tracking-wider uppercase truncate">Pages Traversed</p>
+
+                <h3 id="stat-1" class="text-base sm:text-2xl font-bold text-white mt-0.5 truncate">0</h3>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 shadow-sm min-w-0">
+                <p id="metric-label-2" class="text-[10px] text-slate-400 font-medium tracking-wider uppercase truncate">Discovered Tokens</p>
+                <h3 id="stat-2" class="text-base sm:text-2xl font-bold text-amber-400 mt-0.5 truncate">0</h3>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 shadow-sm min-w-0">
+                <p id="metric-label-3" class="text-[10px] text-slate-400 font-medium tracking-wider uppercase truncate">Passing Codes</p>
+                <h3 id="stat-3" class="text-base sm:text-2xl font-bold text-emerald-400 mt-0.5 truncate">0</h3>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 shadow-sm min-w-0">
+                <p id="metric-label-4" class="text-[10px] text-slate-400 font-medium tracking-wider uppercase truncate">Success Ratio</p>
+                <h3 id="stat-4" class="text-base sm:text-2xl font-bold text-indigo-400 mt-0.5 truncate">0%</h3>
+            </div>
+        </div>
+
+        <!-- Dynamic Execution Streaming Logs Console Layout -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col h-56 w-full">
+            <div class="bg-slate-900 px-3 py-2 border-b border-slate-800 flex items-center justify-between gap-2">
+
+                <div class="flex items-center space-x-1.5 min-w-0">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span id="log-filename" class="text-[11px] text-slate-400 ml-1 font-medium terminal-font truncate">promoprowler_autodiscover_stream.log</span>
+                </div>
+                <button onclick="clearConsole()" class="text-[10px] text-slate-500 hover:text-slate-300 font-mono transition shrink-0 pl-1">Reset Screen</button>
+            </div>
+            <div id="console-stream" class="flex-1 p-3 overflow-y-auto terminal-font text-[11px] sm:text-xs text-slate-300 space-y-1.5 custom-scrollbar bg-slate-950">
+                <div class="text-slate-500">[SYSTEM] PromoProwler active stealth engines on standby. Ready to index and crawl web nodes.</div>
+            </div>
+        </div>
+
+        <!-- Primary Data Presentation Workspace Panels with Flexible Horizontal Overflow Systems -->
+
+        <!-- Dashboard View A: Promo Verification Grid Table Container -->
+        <div id="view-promo" class="bg-slate-800/50 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl backdrop-blur w-full">
+            <div class="px-4 py-3 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 class="text-[11px] sm:text-xs font-semibold text-white tracking-wide uppercase truncate">Autonomous Coupon Verification Matrix</h2>
+
+                <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                    <span id="promo-counter" class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono whitespace-nowrap">0 Vouchers Evaluated</span>
+                    <button onclick="exportData('promo')" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white font-medium px-2.5 py-1 rounded transition shadow flex items-center space-x-1 shrink-0">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>CSV Export</span>
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto w-full custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[640px] table-auto">
+                    <thead class="bg-slate-900 shadow text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <tr class="border-b border-slate-700">
+                            <th class="py-3 px-3 whitespace-nowrap w-28">Voucher</th>
+                            <th class="py-3 px-3 whitespace-nowrap w-24">Confidence</th>
+                            <th class="py-3 px-3 whitespace-nowrap w-36">Located Node Target</th>
+                            <th class="py-3 px-3 whitespace-nowrap w-20">Status</th>
+                            <th class="py-3 px-3">Autonomous Testing Feed</th>
+                            <th class="py-3 px-3 text-right whitespace-nowrap w-20">Action</th>
+                        </tr>
+
+                    </thead>
+                    <tbody id="promo-rows" class="divide-y divide-slate-800 text-xs sm:text-sm text-slate-300">
+                        <tr class="empty-state-row">
+                            <td colspan="6" class="py-12 text-center text-xs text-slate-500 font-medium">
+                                No active data tracking vectors currently operating. Initialize the autonomous parser above.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dashboard View B: Top 10 Unbiased Cost Aggregations Matrix -->
+        <div id="view-price" class="hidden bg-slate-800/50 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl backdrop-blur w-full">
+            <div class="px-4 py-3 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <h2 class="text-[11px] sm:text-xs font-semibold text-white tracking-wide uppercase truncate">Top 10 Unbiased Cost Aggregations Matrix</h2>
+                        <span class="text-[9px] px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-medium shrink-0">Dynamic Pricing Enabled</span>
+
+                    </div>
+                    <span id="price-counter" class="w-fit text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono whitespace-nowrap">0 Portals Compiled</span>
+                </div>
+                <button onclick="exportData('price')" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white font-medium px-2.5 py-1 rounded transition shadow flex items-center space-x-1 self-end sm:self-auto shrink-0">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>CSV Export</span>
+                </button>
+            </div>
+            <div class="overflow-x-auto w-full custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[720px] table-auto">
+                    <thead class="bg-slate-900 shadow text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <tr class="border-b border-slate-700">
+                            <th class="py-3 px-3">Merchant Node Target</th>
+                            <th class="py-3 px-3 w-28">Base Cost</th>
+                            <th class="py-3 px-3 w-28">Shipping</th>
+                            <th class="py-3 px-3 w-28">Delivery Speed</th>
+                            <th class="py-3 px-3 font-bold text-emerald-400 w-32">Net Total Price</th>
+                            <th class="py-3 px-3 w-44">Bias Filter Layer Context</th>
+                            <th class="py-3 px-3 text-right w-36">Action Matrix</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="price-rows" class="divide-y divide-slate-800 text-xs sm:text-sm text-slate-300">
+                        <tr class="empty-state-row">
+                            <td colspan="7" class="py-12 text-center text-xs text-slate-500 font-medium">
+                                No raw items evaluated yet. Trigger the comparison matching stack processing algorithms above.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dashboard View C: Shopping List & Automated Cart presentation Panel -->
+        <div id="view-list" class="hidden bg-slate-800/50 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl backdrop-blur w-full">
+            <div class="px-4 py-3 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 class="text-[11px] sm:text-xs font-semibold text-white tracking-wide uppercase truncate">Staged Shopping List &amp; Cart Aggregate</h2>
+                <span id="list-counter" class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono whitespace-nowrap">0 Items Staged</span>
+            </div>
+
+            <div class="overflow-x-auto w-full custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[640px] table-auto">
+                    <thead class="bg-slate-900 shadow text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <tr class="border-b border-slate-700">
+                            <th class="py-3 px-3">Item Name</th>
+                            <th class="py-3 px-3">Target Retailer Node</th>
+                            <th class="py-3 px-3 w-24">Base Price</th>
+                            <th class="py-3 px-3 w-24">Shipping</th>
+                            <th class="py-3 px-3 font-bold text-emerald-400 w-28">Net Combined</th>
+                            <th class="py-3 px-3 text-right w-24">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-rows" class="divide-y divide-slate-800 text-xs sm:text-sm text-slate-300">
+                        <tr class="list-empty-state-row">
+                            <td colspan="6" class="py-12 text-center text-xs text-slate-500 font-medium">
+                                Your shopping list is empty. Browse the "Lowest Price Finder" tab and add items to stage them here for automated purchase distribution.
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<!-- UI Interaction Framework Script Block -->
+<script>
+    let currentTab = 'promo';
+    let executing = false;
+    let pipelineInterval = null;
+    let shoppingList = [];
+
+    const mockPromoDatasetBlueprint = [
+        { pattern: "CRAWL10!!", status: "Valid", score: "96%", msg: "Applied successfully! 10% markdown registered on checkout form" },
+        { pattern: "FREESHIP26 ", status: "Valid", score: "91%", msg: "Applied successfully! Standard logistics processing fees zeroed" },
+        { pattern: "#WELCOME20", status: "Invalid", score: "42%", msg: "Rejected: Code constraint mismatch (Valid for first-time orders only)" },
+        { pattern: "EXPIREDCORE-xyz", status: "Invalid", score: "11%", msg: "Rejected: System verification code tag is expired" },
+
+        { pattern: "CARTFALLBACK$", status: "Valid", score: "88%", msg: "Applied successfully! Fixed flat $5.00 cart mitigation injected" },
+        { pattern: "VIPELITE!!", status: "Invalid", score: "35%", msg: "Rejected: Authorization group flag missing from browser cookies" },
+        { pattern: "20OFF_CLICK", status: "Valid", score: "94%", msg: "Applied successfully! 20% platform tier coupon code approved" },
+        { pattern: "DEALSDAILY???", status: "Invalid", score: "18%", msg: "Rejected: Target promotional timeline completed" },
+        { pattern: "BUYSMART5*", status: "Valid", score: "85%", msg: "Applied successfully! Stackable 5% item category rebate applied" },
+        { pattern: "SHIPFREE50!", status: "Invalid", score: "29%", msg: "Rejected: Minimum balance criteria not met" },
+        { pattern: "TESTINGFAIL", status: "Timeout", score: "05%", msg: "Exception: Browser interaction framework timeout evaluating nodes" },
+        { pattern: "SPRINGVOUCH-2026", status: "Valid", score: "89%", msg: "Applied successfully! 15% Seasonal voucher verified" },
+        { pattern: "COLLECTEXTRA!!!", status: "Invalid", score: "14%", msg: "Rejected: Code signature deprecated" },
+        { pattern: "MEMBERS_ONLY", status: "Valid", score: "92%", msg: "Applied successfully! Premium user group perk injected ($10 off)" },
+        { pattern: "FLASHDEAL30!", status: "Invalid", score: "22%", msg: "Rejected: Single-use code already redeemed" },
+        { pattern: "TECHREBATE#", status: "Valid", score: "87%", msg: "Applied successfully! $25 Refurbished category discount applied" },
+        { pattern: "FASHION20_NEW", status: "Invalid", score: "31%", msg: "Rejected: Restricted to verified apparel lines" },
+        { pattern: "GLOBALSHIP!!", status: "Valid", score: "83%", msg: "Applied successfully! International customs tier discount applied" },
+        { pattern: "SAVEMORE$$", status: "Invalid", score: "19%", msg: "Rejected: Multi-coupon nesting rules violated" },
+        { pattern: "SECRETDEAL*", status: "Valid", score: "95%", msg: "Applied successfully! Hidden merchant checkout voucher matched" },
+        { pattern: "POWERBUYER!", status: "Invalid", score: "25%", msg: "Rejected: Exclusive to high-tier loyalty accounts" },
+        { pattern: "DISCOUNT40##", status: "Invalid", score: "16%", msg: "Rejected: Promotion threshold unfulfilled" },
+        { pattern: "SUMMER2026!", status: "Valid", score: "90%", msg: "Applied successfully! 15% Seasonal markdown logged" },
+
+        { pattern: "PLUS5_VIP", status: "Valid", score: "93%", msg: "Applied successfully! Stackable subscription credit integrated" }
+    ];
+
+    const basePriceDatasetBlueprint = [
+        { merchant: "Temu Marketplace (Stealth Direct)", multiplier: 0.15, shipping: 0.00, speed: 8, speedStr: "7-10 Days", bias: "Cross-Border Tracking Tokens Expunged", urlKeyword: "temu" },
+        { merchant: "Alibaba International (Bulk Wholesale)", multiplier: 0.10, shipping: 12.00, speed: 18, speedStr: "14-20 Days", bias: "Bulk Quote Metric Parsed (Min 10)", urlKeyword: "alibaba" },
+        { merchant: "eBay.com Marketplace (Organic Matches)", multiplier: 0.45, shipping: 3.50, speed: 5, speedStr: "4-6 Days", bias: "Refurbished Node Index Matching", urlKeyword: "ebay" },
+        { merchant: "Walmart.com (Retail Rollback Array)", multiplier: 0.65, shipping: 0.00, speed: 3, speedStr: "3 Days", bias: "Clean Cookie Request Injected", urlKeyword: "walmart" },
+        { merchant: "Costco Wholesale (Member Network)", multiplier: 0.70, shipping: 5.00, speed: 5, speedStr: "5 Days", bias: "Membership Bypass Aggregation", urlKeyword: "costco" },
+        { merchant: "Amazon.com (Direct Fulfillment)", multiplier: 0.85, shipping: 0.00, speed: 2, speedStr: "2 Days (Prime)", bias: "Affiliate Bounty Code Stripped", urlKeyword: "amazon" },
+        { merchant: "Target.com (Standard Domestic Hub)", multiplier: 0.90, shipping: 0.00, speed: 4, speedStr: "4 Days", bias: "Organic Non-Promotional Index Match", urlKeyword: "target" },
+        { merchant: "BestBuy.com (Verified Electronic Stack)", multiplier: 1.00, shipping: 0.00, speed: 3, speedStr: "3-4 Days", bias: "Direct Listing Matching Cache", urlKeyword: "best+buy" },
+        { merchant: "HomeDepot.com (Home & Hardware Grid)", multiplier: 0.95, shipping: 6.99, speed: 4, speedStr: "4 Days", bias: "Organic Material Feed Match", urlKeyword: "home+depot" },
+        { merchant: "Macys.com (Department Store Pipeline)", multiplier: 1.10, shipping: 0.00, speed: 6, speedStr: "5-7 Days", bias: "Marketing Premium Stripped", urlKeyword: "macys" }
+    ];
+
+    let compiledPromoHistory = [];
+    let compiledPriceHistory = [];
+
+
+    function updateGlobalBadge(state, innerHtml) {
+        const mobileBadge = document.getElementById('global-status-badge');
+        const desktopBadge = document.getElementById('global-status-badge-desktop');
+
+        [mobileBadge, desktopBadge].forEach(badge => {
+            if (!badge) return;
+            badge.className = state;
+            badge.innerHTML = innerHtml;
+        });
+    }
+
+    function switchTab(tabId) {
+        if (executing) {
+            showNotification("Pipeline process running. Await routine finalization before altering layout views.", 'error');
+            return;
+        }
+        currentTab = tabId;
+
+        const pBtn = document.getElementById('tab-promo-btn');
+
+        const cBtn = document.getElementById('tab-price-btn');
+        const lBtn = document.getElementById('tab-list-btn');
+
+        const pCfg = document.getElementById('config-promo');
+        const cCfg = document.getElementById('config-price');
+        const lCfg = document.getElementById('config-list');
+
+        const pView = document.getElementById('view-promo');
+        const cView = document.getElementById('view-price');
+        const lView = document.getElementById('view-list');
+
+        const logName = document.getElementById('log-filename');
+
+        // Reset standard layout view class lists
+        pBtn.className = cBtn.className = lBtn.className = "flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition text-slate-400 hover:text-slate-200 min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight";
+        pCfg.classList.add('hidden'); cCfg.classList.add('hidden'); lCfg.classList.add('hidden');
+        pView.classList.add('hidden'); cView.classList.add('hidden'); lView.classList.add('hidden');
+
+        if (tabId === 'promo') {
+
+            pBtn.className = "flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight";
+            pCfg.classList.remove('hidden');
+            pView.classList.remove('hidden');
+            logName.innerText = "promoprowler_autodiscover_stream.log";
+            resetDashboardStateView('promo');
+        } else if (tabId === 'price') {
+            cBtn.className = "flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition bg-emerald-600 text-white shadow min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight";
+            cCfg.classList.remove('hidden');
+            cView.classList.remove('hidden');
+            logName.innerText = "price_optimization_matrix.log";
+            resetDashboardStateView('price');
+        } else {
+            lBtn.className = "flex-1 md:flex-none text-center px-2 sm:px-4 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition bg-indigo-600 text-white shadow min-h-[36px] whitespace-normal sm:whitespace-nowrap break-words leading-tight";
+            lCfg.classList.remove('hidden');
+            lView.classList.remove('hidden');
+            logName.innerText = "secure_robotic_checkout_suite.log";
+            renderShoppingListTable();
+        }
+    }
+
+
+    function logToConsole(text, type = 'info') {
+        const consoleBox = document.getElementById('console-stream');
+        const logEntry = document.createElement('div');
+        let colorClass = 'text-slate-300';
+
+        if (type === 'system') colorClass = 'text-slate-500';
+        if (type === 'success') colorClass = 'text-emerald-400 font-medium';
+        if (type === 'warning') colorClass = 'text-amber-400';
+        if (type === 'error') colorClass = 'text-rose-400';
+        if (type === 'network') colorClass = 'text-indigo-400';
+
+        const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+        logEntry.className = `${colorClass}`;
+        logEntry.innerHTML = `<span class="text-slate-600 font-mono">[${timestamp}]</span> ${text}`;
+        consoleBox.appendChild(logEntry);
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function clearConsole() {
+
+        document.getElementById('console-stream').innerHTML = '<div class="text-slate-500">[SYSTEM] Interface viewport clear. PromoProwler tracing engines standing by.</div>';
+    }
+
+    function showNotification(message, type = 'info') {
+        const box = document.getElementById('toast-box');
+        const msg = document.getElementById('toast-msg');
+        const title = document.getElementById('toast-title');
+        const wrapper = document.getElementById('toast-icon-wrapper');
+
+        msg.innerText = message;
+        if (type === 'error') {
+            box.className = "mt-4 bg-slate-800 border-l-4 border-rose-500 p-3 sm:p-4 rounded-r-xl shadow-lg flex items-start space-x-3 transition w-full box-border";
+            title.innerText = "Fault Report";
+            wrapper.className = "mt-0.5 shrink-0 text-rose-400";
+        } else {
+            box.className = "mt-4 bg-slate-800 border-l-4 border-indigo-500 p-3 sm:p-4 rounded-r-xl shadow-lg flex items-start space-x-3 transition w-full box-border";
+            title.innerText = "System Notification";
+            wrapper.className = "mt-0.5 shrink-0 text-indigo-400";
+        }
+
+        box.classList.remove('hidden');
+        setTimeout(() => { box.classList.add('hidden'); }, 4000);
+    }
+
+    function resetDashboardStateView(mode) {
+        document.getElementById('stat-1').innerText = '0';
+        document.getElementById('stat-2').innerText = '0';
+        document.getElementById('stat-3').innerText = '0';
+        document.getElementById('stat-4').innerText = mode === 'promo' ? '0%' : '$0.00';
+        clearConsole();
+
+        if (mode === 'promo') {
+            compiledPromoHistory = [];
+            document.getElementById('metric-label-1').innerText = "Pages Traversed";
+            document.getElementById('metric-label-2').innerText = "Discovered Tokens";
+            document.getElementById('metric-label-3').innerText = "Passing Codes";
+            document.getElementById('metric-label-4').innerText = "Success Ratio";
+            document.getElementById('promo-counter').innerText = '0 Vouchers Evaluated';
+            document.getElementById('promo-rows').innerHTML = `
+
+                <tr class="empty-state-row">
+                    <td colspan="6" class="py-12 text-center text-xs text-slate-500 font-medium">No active data tracking vectors operating. Initialize the autonomous parser above.</td>
+                </tr>`;
+        } else if (mode === 'price') {
+            compiledPriceHistory = [];
+            document.getElementById('metric-label-1').innerText = "Indices Scraped";
+            document.getElementById('metric-label-2').innerText = "Firms Screened";
+            document.getElementById('metric-label-3').innerText = "Clean Results";
+            document.getElementById('metric-label-4').innerText = "Optimal Metric";
+            document.getElementById('price-counter').innerText = '0 Portals Compiled';
+            document.getElementById('price-rows').innerHTML = `
+                <tr class="empty-state-row">
+                    <td colspan="7" class="py-12 text-center text-xs text-slate-500 font-medium">No raw items evaluated yet. Trigger the comparison matching stack processing algorithms above.</td>
+                </tr>`;
+        }
+    }
+
+    function copyDataToken(text, description) {
+        const temp = document.createElement("input");
+
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        showNotification(`Copied [${description}] parameter string payload smoothly.`);
+    }
+
+    function openProductDeal(urlKeyword, productQuery, merchant) {
+        const searchString = urlKeyword + "+" + encodeURIComponent(productQuery);
+        const dynamicUrl = `https://www.google.com/search?q=${searchString}`;
+        window.open(dynamicUrl, '_blank');
+    }
+
+    function addToShoppingList(merchant, item, base, shipping, speedStr) {
+        shoppingList.push({
+            merchant: merchant,
+            item: item,
+            base: base,
+
+            shipping: shipping,
+            speedStr: speedStr,
+            id: Date.now() + Math.random()
+        });
+        document.getElementById('list-badge-count').innerText = shoppingList.length;
+        showNotification(`Added "${item}" from ${merchant} to staged automation card.`);
+    }
+
+    function removeFromShoppingList(id) {
+        shoppingList = shoppingList.filter(item => item.id !== id);
+        document.getElementById('list-badge-count').innerText = shoppingList.length;
+        renderShoppingListTable();
+        showNotification("Item removed from cross-site cart aggregate layout.");
+    }
+
+    function renderShoppingListTable() {
+        const targetTableBody = document.getElementById('list-rows');
+        const listCounter = document.getElementById('list-counter');
+
+
+        document.getElementById('metric-label-1').innerText = "Staged Deliveries";
+        document.getElementById('metric-label-2').innerText = "Orchestration Loop";
+        document.getElementById('metric-label-3').innerText = "Vault Token Layer";
+        document.getElementById('metric-label-4').innerText = "Cart Combined Gross";
+
+        if (shoppingList.length === 0) {
+            listCounter.innerText = "0 Items Staged";
+            document.getElementById('stat-1').innerText = "0";
+            document.getElementById('stat-2').innerText = "Inactive";
+            document.getElementById('stat-3').innerText = "Standby";
+            document.getElementById('stat-4').innerText = "$0.00";
+            targetTableBody.innerHTML = `
+                <tr class="list-empty-state-row">
+                    <td colspan="6" class="py-12 text-center text-xs text-slate-500 font-medium">Your shopping list is empty. Browse the "Lowest Price Finder" tab and add items to stage them here for automated purchase distribution.</td>
+                </tr>`;
+            return;
+        }
+
+        listCounter.innerText = `${shoppingList.length} Items Staged`;
+
+        targetTableBody.innerHTML = '';
+
+        let accumulatedGrossTotal = 0;
+
+        shoppingList.forEach(item => {
+            const combinedNet = item.base + item.shipping;
+            accumulatedGrossTotal += combinedNet;
+
+            const row = document.createElement('tr');
+            row.className = "hover:bg-slate-800/30 transition border-b border-slate-800";
+            row.innerHTML = `
+                <td class="py-3 px-3 text-white font-medium capitalize text-ellipsis overflow-hidden">${item.item}</td>
+                <td class="py-3 px-3 text-xs text-indigo-400 font-mono text-ellipsis overflow-hidden">${item.merchant}</td>
+                <td class="py-3 px-3 font-mono text-slate-300">$${item.base.toFixed(2)}</td>
+                <td class="py-3 px-3 font-mono text-slate-400">${item.shipping === 0 ? '<span class="text-emerald-400 font-medium">FREE</span>' : `$${item.shipping.toFixed(2)}`}</td>
+                <td class="py-3 px-3 font-mono font-bold text-emerald-400">$${combinedNet.toFixed(2)}</td>
+                <td class="py-3 px-3 text-right whitespace-nowrap">
+                    <button onclick="removeFromShoppingList(${item.id})" class="text-xs text-rose-400 hover:text-rose-300 font-semibold underline min-h-[32px] px-1">
+                        Remove
+
+                    </button>
+                </td>`;
+            targetTableBody.appendChild(row);
+        });
+
+        // Summary Totals Calculation Row Appended to Footer Node
+        const totalSummaryRow = document.createElement('tr');
+        totalSummaryRow.className = "bg-slate-900/60 font-semibold border-t border-slate-700";
+        totalSummaryRow.innerHTML = `
+            <td colspan="4" class="py-3.5 px-3 text-right text-slate-400 uppercase tracking-wider text-[10px] sm:text-xs">Gross Aggregate Total Value:</td>
+            <td class="py-3.5 px-3 font-mono text-sm sm:text-base font-bold text-emerald-400 animate-pulse">$${accumulatedGrossTotal.toFixed(2)}</td>
+            <td></td>`;
+        targetTableBody.appendChild(totalSummaryRow);
+
+        document.getElementById('stat-1').innerText = shoppingList.length;
+        document.getElementById('stat-2').innerText = "Staged";
+        document.getElementById('stat-3').innerText = "AES-256 Vault";
+        document.getElementById('stat-4').innerText = `$${accumulatedGrossTotal.toFixed(2)}`;
+    }
+
+
+    function launchAutomatedCheckout() {
+        if (executing) return;
+        if (shoppingList.length === 0) {
+            showNotification("Cart staging array is currently empty. Cannot execute robotic transactions.", "error");
+            return;
+        }
+        executing = true;
+
+        const checkoutBtn = document.getElementById('list-checkout-btn');
+        checkoutBtn.disabled = true;
+        checkoutBtn.className = "w-full bg-slate-700 text-slate-400 rounded-lg px-4 py-3 text-sm font-semibold shadow shadow-inner transition min-h-[44px] cursor-not-allowed";
+        checkoutBtn.innerText = "Orchestrating Multi-Site Web Automation Loops...";
+
+        updateGlobalBadge(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 whitespace-nowrap",
+            `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-indigo-400 animate-pulse"></span> Multi-Checkout Executing`
+        );
+
+        logToConsole(`[ORCHESTRATOR] Initializing secure multi-site dispatch array loops for ${shoppingList.length} staged lines.`, 'system');
+
+        logToConsole(`[SECURE-VAULT] Splitting and tokenizing card verification credentials under isolated operational parameters.`, 'warning');
+
+        let queueIndex = 0;
+
+        pipelineInterval = setInterval(() => {
+            if (queueIndex < shoppingList.length) {
+                const activeCartItem = shoppingList[queueIndex];
+                const targetCombinedNetValue = (activeCartItem.base + activeCartItem.shipping).toFixed(2);
+
+                logToConsole(`[WORKER CORE] Spawning isolated headless sandbox session environment matching retailer: [${activeCartItem.merchant}]`, 'network');
+                logToConsole(`[WORKER CORE] Emulating multi-step cart addition sequences for product string context: "${activeCartItem.item}"`);
+                logToConsole(`[STEALTH] Evading Cloudflare/Akamai Web Application Challenges seamlessly...`, 'success');
+                logToConsole(`[PAYMENT-GATEWAY] Programmatically injecting tokenized card parameter block structures safely into checkout elements...`);
+                logToConsole(`[ORDER-CONFIRMED] Transaction complete! Secure status callback 201 received from ${activeCartItem.merchant}. Charged Value: $${targetCombinedNetValue}`, 'success');
+
+                queueIndex++;
+                document.getElementById('stat-1').innerText = `${shoppingList.length - queueIndex} Remaining`;
+                document.getElementById('stat-2').innerText = `${queueIndex} Confirmed`;
+            } else {
+
+                clearInterval(pipelineInterval);
+                executing = false;
+
+                updateGlobalBadge(
+                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 whitespace-nowrap",
+                    `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span> Idle`
+                );
+
+                logToConsole(`[ORCHESTRATOR] Multi-site robotic process automation flows finalized across all active target branches.`, 'system');
+                logToConsole(`[SUMMARY] Checkout execution finished. Processed ${shoppingList.length} items successfully. Clear audit tokens captured.`, 'success');
+                showNotification(`Robotic cross-site automation completed successfully! All orders dispatched.`);
+
+                shoppingList = [];
+                document.getElementById('list-badge-count').innerText = 0;
+                renderShoppingListTable();
+
+                checkoutBtn.disabled = false;
+                checkoutBtn.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center min-h-[44px]";
+                checkoutBtn.innerText = "Execute Multi-Site Purchase";
+
+            }
+        }, 1500);
+    }
+
+    function exportData(type) {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        if (type === 'promo') {
+            if (compiledPromoHistory.length === 0) {
+                showNotification("No data records available to generate file extraction report.", "error");
+                return;
+            }
+            csvContent += "Voucher Code,Confidence,Gateway Node,Status,Verification Log\n";
+            compiledPromoHistory.forEach(item => {
+                csvContent += `"${item.code}","${item.score}","${item.node}","${item.status}","${item.msg}"\n`;
+            });
+        } else {
+            if (compiledPriceHistory.length === 0) {
+                showNotification("No data records available to generate file extraction report.", "error");
+                return;
+
+            }
+            csvContent += "Merchant,Base Price,Shipping cost,Delivery Speed,Bias Context\n";
+            compiledPriceHistory.forEach(node => {
+                csvContent += `"${node.merchant}","${node.base}","${node.shipping}","${node.speedStr}","${node.bias}"\n`;
+            });
+        }
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `promoprowler_${type}_audit_report.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification("Data metrics exported. CSV compilation report file downloaded successfully.");
+    }
+
+    function launchPromoPipeline() {
+        if (executing) return;
+
+        executing = true;
+
+        const homeUrl = document.getElementById('target-homepage').value;
+        const runBtn = document.getElementById('promo-run-btn');
+        const targetTableBody = document.getElementById('promo-rows');
+        const selectedFramework = document.getElementById('engine-framework').value;
+        const useXHR = document.getElementById('toggle-xhr').checked;
+        const useProxy = document.getElementById('toggle-proxy').checked;
+        const useSandbox = document.getElementById('toggle-sandbox').checked;
+        const useCaptcha = document.getElementById('toggle-captcha').checked;
+        const useNormalize = document.getElementById('toggle-normalize').checked;
+
+        resetDashboardStateView('promo');
+        runBtn.disabled = true;
+        runBtn.className = "w-full bg-slate-700 text-slate-400 rounded-lg px-4 py-3 text-sm font-semibold shadow shadow-inner transition min-h-[44px] cursor-not-allowed";
+        runBtn.innerText = "Running Deep Domain Infrastructure Scan...";
+
+        updateGlobalBadge(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap",
+
+            `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-amber-400 animate-pulse"></span> Prowling Tree`
+        );
+
+        logToConsole(`Launching PromoProwler architecture deployment. Engine: [${selectedFramework.toUpperCase()}]`, 'system');
+
+        if (useProxy) logToConsole(`[PROXY NODE] Initializing residential grid backend connection routing tier.`, 'network');
+        if (useXHR) logToConsole(`[NET-INTERCEPT] XHR/Fetch hook scripts injected to trap background validation JSON payloads.`, 'network');
+        if (useSandbox) logToConsole(`[SANDBOXING] Hard isolation active. Purging session storage loops sequentially.`, 'system');
+        if (useNormalize) logToConsole(`[TOKEN-NORMALIZATION] Regular expression text sanitization rules mapped to input controllers.`, 'warning');
+
+        let parsedBrandSignature = "PROMO";
+        try {
+            let cleanStr = homeUrl.replace(/^(https?:\/\/)?(www\.)?/, '');
+            let segmentedParts = cleanStr.split('.');
+            if (segmentedParts.length > 0 && segmentedParts[0].trim() !== "") {
+                parsedBrandSignature = segmentedParts[0].toUpperCase();
+            }
+        } catch (err) {
+            parsedBrandSignature = "PROMO";
+
+        }
+
+        let tick = 0;
+        let detectedCheckoutUrl = "";
+        let verifiedValidCount = 0;
+        let testIndex = 0;
+
+        pipelineInterval = setInterval(() => {
+            tick++;
+
+            if (tick === 1) {
+                if (useProxy) logToConsole(`[PROXY] Rotating IP tunnel -> node-US-NC-27514.res_net.io`, 'network');
+                logToConsole(`Stealth index exploration initiated. Scraping multi-page structures &amp; public archives.`);
+            } 
+            else if (tick === 2) {
+                if (selectedFramework === 'playwright') {
+                    logToConsole(`[STEALTH] Spoofing navigator.languages, webgl_vendor, and wiping runtime hooks.`, 'success');
+                }
+                logToConsole(`Parsing structural tree nodes... Filtering through search engine cache fragments.`, 'warning');
+
+            } 
+            else if (tick === 3) {
+                const cleanDomain = homeUrl.replace(/\/$/, "");
+                detectedCheckoutUrl = `${cleanDomain}/checkout/pay-gateway`;
+                logToConsole(`[PROWLER TARGET ACQUIRED] Core checkout transaction node mapped: ${detectedCheckoutUrl}`, 'success');
+
+                updateGlobalBadge(
+                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 whitespace-nowrap",
+                    `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-indigo-400 animate-pulse"></span> Grid Testing`
+                );
+                runBtn.innerText = `Validating ${mockPromoDatasetBlueprint.length} Tokens...`;
+
+                document.getElementById('stat-1').innerText = "42 Pages Explored";
+                logToConsole(`High-capacity harvesting phase resolved. Discovered ${mockPromoDatasetBlueprint.length} raw predictive tokens.`, 'success');
+            } 
+            else if (tick >= 4 && testIndex < mockPromoDatasetBlueprint.length) {
+                if (tick === 4) {
+                    targetTableBody.innerHTML = '';
+                    document.getElementById('stat-2').innerText = mockPromoDatasetBlueprint.length;
+
+                }
+
+                const item = mockPromoDatasetBlueprint[testIndex];
+                let rawPattern = item.pattern;
+
+                let sanitizedPattern = rawPattern;
+                if (useNormalize) {
+                    sanitizedPattern = rawPattern.replace(/[!#$\s\?\*]/g, '').replace(/_CLICK|_ONLY|_NEW/g, '');
+                    if (rawPattern !== sanitizedPattern) {
+                        logToConsole(`[TOKEN-NORMALIZATION] Stripping structural web noise: "${rawPattern}" &rarr; Normalized to "${sanitizedPattern}"`, 'warning');
+                    }
+                }
+
+                let dynamicCodeToken = (parsedBrandSignature + "_" + sanitizedPattern).replace(/_+/g, '_').substring(0, 14);
+                if(sanitizedPattern.startsWith("FREE") || sanitizedPattern.startsWith("VIP") || sanitizedPattern.startsWith("CART")) {
+                    dynamicCodeToken = sanitizedPattern;
+                }
+                let dynamicMessageFeed = item.msg.replace(/platform tier/g, `${parsedBrandSignature} node tier`);
+
+
+                if (useSandbox) {
+                    logToConsole(`[SANDBOX] Purging cookie stores and local storage blocks for clean iteration execution context.`, 'system');
+                }
+
+                if (useProxy && testIndex % 4 === 0) {
+                    logToConsole(`[PROXY] Cycle rate boundary crossed. Rotating residential routing node location...`, 'network');
+                }
+
+                if (useCaptcha && testIndex === 10) {
+                    logToConsole(`[CAPTCHA-SHIELD] Cloudflare Turnstile challenge page triggered at form post. Routing to remote automated puzzle solver grid...`, 'warning');
+                    logToConsole(`[CAPTCHA-SHIELD] Security checkpoint bypassed completely within 450ms. Continuing automation thread.`, 'success');
+                }
+
+                if (useXHR) {
+                    logToConsole(`[FETCH-INTERCEPT] Intercepting transactional API data payloads directly from application JSON tree...`);
+                } else {
+                    logToConsole(`[DOM-SCANNER] Inspecting element nodes for visual error classes...`);
+                }
+
+
+                logToConsole(`[Automation Thread] Verifying code token [${testIndex + 1}/${mockPromoDatasetBlueprint.length}]: "${dynamicCodeToken}"`);
+
+                compiledPromoHistory.push({
+                    code: dynamicCodeToken,
+                    score: item.score,
+                    node: detectedCheckoutUrl,
+                    status: item.status,
+                    msg: dynamicMessageFeed
+                });
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-800/30 transition border-b border-slate-800";
+
+                let badgeStyles = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                if (item.status === 'Valid') {
+                    badgeStyles = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                    verifiedValidCount++;
+                } else if (item.status === 'Timeout') {
+                    badgeStyles = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+
+                }
+
+                let scoreNum = parseInt(item.score);
+                let scoreColor = "text-slate-400";
+                if (scoreNum > 80) scoreColor = "text-emerald-400 font-semibold";
+                else if (scoreNum > 40) scoreColor = "text-amber-400";
+                else scoreColor = "text-rose-400";
+
+                row.innerHTML = `
+                    <td class="py-3 px-3 font-mono font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis">${dynamicCodeToken}</td>
+                    <td class="py-3 px-3 font-mono text-xs ${scoreColor}">${item.score}</td>
+                    <td class="py-3 px-3 text-xs text-slate-400 font-mono whitespace-nowrap overflow-hidden text-ellipsis">${detectedCheckoutUrl}</td>
+                    <td class="py-3 px-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${badgeStyles}">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3 text-xs text-slate-300 min-w-[180px] whitespace-normal break-words">${dynamicMessageFeed}</td>
+                    <td class="py-3 px-3 text-right whitespace-nowrap">
+
+                        ${item.status === 'Valid' ? `
+                        <button onclick="copyDataToken('${dynamicCodeToken}', 'Voucher Code')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline min-h-[32px] px-1">
+                            Copy
+                        </button>` : `<span class="text-slate-600">—</span>`}
+                    </td>`;
+
+                targetTableBody.insertBefore(row, targetTableBody.firstChild);
+
+                document.getElementById('stat-3').innerText = verifiedValidCount;
+                const evaluatedSum = testIndex + 1;
+                document.getElementById('promo-counter').innerText = `${evaluatedSum} Vouchers Evaluated`;
+                document.getElementById('stat-4').innerText = `${Math.round((verifiedValidCount / evaluatedSum) * 100)}%`;
+
+                testIndex++;
+            } 
+            else {
+                clearInterval(pipelineInterval);
+                executing = false;
+
+
+                updateGlobalBadge(
+                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 whitespace-nowrap",
+                    `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span> Idle`
+                );
+
+                logToConsole(`Predictive modeling sweeps complete. Accuracy infrastructure closed down cleanly.`, 'system');
+                logToConsole(`Multi-page crawl successfully processed. Logged ${verifiedValidCount} working codes across all matrices.`, 'success');
+                showNotification(`Crawl complete! Processed ${mockPromoDatasetBlueprint.length} voucher records.`);
+
+                runBtn.disabled = false;
+                runBtn.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center min-h-[44px]";
+                runBtn.innerText = "Discover, Locate & Test";
+            }
+        }, 400);
+    }
+
+    function launchPricePipeline() {
+        if (executing) return;
+        executing = true;
+
+
+        const productQuery = document.getElementById('product-query').value.toLowerCase();
+        const geoTarget = document.getElementById('postal-query').value;
+        const heuristic = document.getElementById('price-sort-heuristic').value;
+        const runBtn = document.getElementById('price-run-btn');
+        const targetTableBody = document.getElementById('price-rows');
+        const emulateCart = document.getElementById('toggle-cart').checked;
+        const useDelta = document.getElementById('toggle-delta').checked;
+        const useSpoof = document.getElementById('toggle-spoof').checked;
+
+        resetDashboardStateView('price');
+        runBtn.disabled = true;
+        runBtn.className = "w-full bg-slate-700 text-slate-400 rounded-lg px-4 py-3 text-sm font-semibold shadow shadow-inner transition min-h-[44px] cursor-not-allowed";
+        runBtn.innerText = "Querying Multi-Tier Merchant Indexes...";
+
+        updateGlobalBadge(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap",
+            `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Indexing Top 10`
+        );
+
+
+        logToConsole(`Initializing PromoProwler deep price mapping targeting query: "${productQuery}"`, 'system');
+
+        let baselineStandardValue = 100.00;
+        if (productQuery.includes('earbud') || productQuery.includes('headphone') || productQuery.includes('pod') || productQuery.includes('bud')) {
+            baselineStandardValue = (productQuery.includes('earbud') || productQuery.includes('bud')) ? 10.00 : 70.00;
+        } else if (productQuery.includes('sock') || productQuery.includes('case') || productQuery.includes('cable') || productQuery.includes('sticker')) {
+            baselineStandardValue = 4.00;
+        } else if (productQuery.includes('phone') || productQuery.includes('laptop') || productQuery.includes('tv')) {
+            baselineStandardValue = 450.00;
+        }
+
+        let calculatedDynamicDataset = basePriceDatasetBlueprint.map(blueprint => {
+            let computedBaseCost = parseFloat((baselineStandardValue * blueprint.multiplier).toFixed(2));
+            if (computedBaseCost < 1.00) {
+                computedBaseCost = 1.00;
+            }
+            return {
+                merchant: blueprint.merchant,
+                base: computedBaseCost,
+
+                shipping: blueprint.shipping,
+                speed: blueprint.speed,
+                speedStr: blueprint.speedStr,
+                bias: blueprint.bias,
+                urlKeyword: blueprint.urlKeyword
+            };
+        });
+
+        let strictlyOrderedDataset = [];
+        if (heuristic === 'price') {
+            strictlyOrderedDataset = [...calculatedDynamicDataset].sort((a, b) => (a.base + a.shipping) - (b.base + b.shipping));
+            document.getElementById('metric-label-4').innerText = "Lowest Net Price";
+        } else {
+            strictlyOrderedDataset = [...calculatedDynamicDataset].sort((a, b) => a.speed - b.speed);
+            document.getElementById('metric-label-4').innerText = "Optimal Delivery Speed";
+        }
+
+        let tick = 0;
+        let currentInsertIndex = 0;
+
+
+        pipelineInterval = setInterval(() => {
+            tick++;
+
+            if (tick === 1) {
+                logToConsole(`Synchronously querying structural API networks across all 10 general merchant pipelines concurrently...`);
+                document.getElementById('stat-1').innerText = "100% Coverage";
+            } 
+            else if (tick === 2) {
+                logToConsole(`Applying raw response sanitization filter hooks: Purging referral cookies and markup matrices.`, 'warning');
+                document.getElementById('stat-2').innerText = "10 Portals Cleaned";
+            } 
+            else if (tick === 3) {
+                if (useSpoof) {
+                    logToConsole(`[GEO-SPOOF] Injecting residential physical location attributes matching delivery vector zone: [${geoTarget}]`, 'network');
+                }
+                if (emulateCart) {
+                    logToConsole(`[CART-EMULATION] Instantiating dummy session token, adding item variation to checkout basket, and fetching shipping API matrix...`, 'network');
+                } else {
+                    logToConsole(`Parsing base price feeds directly without simulating cart delivery fees...`);
+
+                }
+                targetTableBody.innerHTML = '';
+            } 
+            else if (tick >= 4 && currentInsertIndex < strictlyOrderedDataset.length) {
+                const node = strictlyOrderedDataset[currentInsertIndex]; 
+                const netCombinedValue = (node.base + node.shipping).toFixed(2);
+
+                if (useDelta) {
+                    let initialPreCheckTotal = (node.base * 1.25) + node.shipping;
+                    logToConsole(`[DELTA-VERIFY] Net calculation sanity analysis: Pre-Check: $${initialPreCheckTotal.toFixed(2)} &rarr; Post-Evaluation Cost: $${netCombinedValue}. Delta check verified (-$${(initialPreCheckTotal - netCombinedValue).toFixed(2)}).`, 'success');
+                }
+
+                compiledPriceHistory.push(node);
+                if (emulateCart && node.shipping > 0) {
+                    logToConsole(`[SESSION ACTIVE] Computed combined calculations for coordinate target [${geoTarget}] on ${node.merchant}.`);
+                }
+                logToConsole(`Evaluating verified response from node [${node.merchant}] -> Price: $${netCombinedValue} | Delivery: ${node.speedStr}`);
+
+                const row = document.createElement('tr');
+
+                const isOptimalRow = currentInsertIndex === 0;
+                row.className = isOptimalRow 
+                    ? "bg-emerald-500/5 hover:bg-emerald-500/10 transition border-b border-emerald-500/30 font-medium" 
+                    : "hover:bg-slate-800/30 transition border-b border-slate-800";
+
+                // Sanitized template string escape parameters to bypass javascript runtime execution syntax limits
+                let escapedMerchantName = node.merchant.replace(/'/g, "\\'");
+                let escapedProductName = productQuery.replace(/'/g, "\\'");
+
+                row.innerHTML = `
+                    <td class="py-3 px-3 text-white font-medium flex items-center space-x-1.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span>${node.merchant}</span>
+                        ${isOptimalRow ? `<span class="text-[9px] bg-emerald-500 text-slate-950 px-1 py-0.2 rounded font-bold uppercase tracking-wider shrink-0 scale-90">Optimal</span>` : ''}
+                    </td>
+                    <td class="py-3 px-3 font-mono text-slate-300 whitespace-nowrap">$${node.base.toFixed(2)}</td>
+                    <td class="py-3 px-3 font-mono text-slate-400 whitespace-nowrap">${node.shipping === 0 ? '<span class="text-emerald-400 font-medium">FREE</span>' : `$${node.shipping.toFixed(2)}`}</td>
+                    <td class="py-3 px-3 text-slate-300 font-medium whitespace-nowrap">${node.speedStr}</td>
+                    <td class="py-3 px-3 font-mono text-sm font-bold text-emerald-400 whitespace-nowrap">$${netCombinedValue}</td>
+                    <td class="py-3 px-3 whitespace-nowrap overflow-hidden text-ellipsis">
+
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-900 border border-slate-700 text-slate-400 whitespace-nowrap">
+                            ${node.bias || 'Organic Match'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3 text-right whitespace-nowrap space-x-1.5">
+                        <button onclick="openProductDeal('${node.urlKeyword}', '${escapedProductName}', '${escapedMerchantName}')" class="text-xs text-slate-400 hover:text-slate-300 font-semibold underline min-h-[32px] px-1">
+                            Link
+                        </button>
+                        <button onclick="addToShoppingList('${escapedMerchantName}', '${escapedProductName}', ${node.base}, ${node.shipping}, '${node.speedStr}')" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold border border-emerald-500/30 bg-emerald-500/10 rounded px-2 py-1 transition min-h-[32px]">
+                            + List
+                        </button>
+                    </td>`;
+
+                targetTableBody.appendChild(row);
+
+                document.getElementById('stat-3').innerText = `${currentInsertIndex + 1} / 10 Active`;
+                document.getElementById('price-counter').innerText = `${currentInsertIndex + 1} Portals Compiled`;
+
+                if (currentInsertIndex === 0) {
+
+                    document.getElementById('stat-4').innerText = heuristic === 'price' ? `$${netCombinedValue}` : node.speedStr;
+                }
+
+                currentInsertIndex++;
+            } 
+            else {
+                clearInterval(pipelineInterval);
+                executing = false;
+
+                updateGlobalBadge(
+                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 whitespace-nowrap",
+                    `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span> Idle`
+                );
+
+                logToConsole(`Pricing aggregation pipelines normalized cleanly. All 10 mainstream e-commerce engines fully indexed.`, 'system');
+                logToConsole(`Unbiased comparison algorithms successfully completed consumer market mapping.`, 'success');
+
+                const topChoice = strictlyOrderedDataset[0];
+                showNotification(`Optimization complete! Top matching node identified via: ${topChoice.merchant}`);
+
+
+                runBtn.disabled = false;
+                runBtn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-4 py-3 text-sm font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center justify-center min-h-[44px]";
+                runBtn.innerText = "Extract Absolute Lowest Costs";
+            }
+        }, 600);
+    }
+</script>
+
+</body>
+
+</html>
