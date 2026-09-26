@@ -1,40 +1,103 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PromoProwler Intelligence Core v8</title><style>
-body{font:14px system-ui;background:#0f172a;color:#e8eef7;margin:0}main{max-width:1280px;margin:auto;padding:18px}.card{background:rgba(30,41,59,.72);border:1px solid #334155;border-radius:14px;padding:14px;margin:12px 0;box-shadow:0 12px 28px rgba(0,0,0,.18)}input,select,button,textarea{box-sizing:border-box;background:#07111f;color:#fff;border:1px solid #38506d;border-radius:9px;padding:10px;margin:4px}button{background:#185adb;cursor:pointer}button.good{background:#087f5b}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.muted{color:#9eb0c6}.result{border-top:1px solid #24364d;padding:10px 0}a{color:#79b8ff}.pill{font-size:11px;padding:3px 7px;border:1px solid #38506d;border-radius:20px}textarea{width:100%;min-height:100px}h1{margin-bottom:0}.warn{color:#ffc857}</style></head><body><main>
-<h1>⚡ PromoProwler Core</h1><div class="muted">v8 • Promo Code Searcher • Lowest Price Finder • Shopping List • live-source worker</div>
-<div class="card"><h3>Shopping list</h3><div class="row"><input id="item" style="flex:1" placeholder="What do you need?"><input id="qty" type="number" min="1" value="1" style="width:75px"><button onclick="addItem()">Add</button></div><div id="list"></div><div class="row"><button onclick="exportList()">Save list file</button><label><input id="importer" type="file" accept=".json"> Load list file</label></div></div>
-<div class="card"><h3>🔎 Lowest Price Finder / Deep Search</h3><div class="grid"><input id="searchQuery" list="savedItems" placeholder="Type ANY product, model, SKU, part, material…"><datalist id="savedItems"></datalist><select id="scope"><option value="all">All sources</option><option value="home">Home / repair</option><option value="market">Marketplaces</option><option value="direct">Direct / manufacturer</option></select><button class="good" onclick="deepSearch()">OPEN DEEP SEARCH</button><button onclick="autoHunt()">AUTO HUNT + RANK</button></div><p class="muted">Type anything — it no longer requires an item to already exist in your saved list. Saved items appear as suggestions. Deep Search builds live retailer, exact-match, manufacturer/direct, coupon and price-comparison searches. AUTO HUNT uses the local worker when available.</p><div id="links"></div></div>
-<div class="card"><h3>Verified offer capture</h3><div class="grid"><input id="merchant" placeholder="Merchant"><input id="product" placeholder="Product"><input id="price" type="number" step=".01" placeholder="Item price"><input id="ship" type="number" step=".01" placeholder="Shipping"><input id="tax" type="number" step=".01" placeholder="Tax/fees"><input id="coupon" placeholder="Verified coupon / savings"><input id="url" placeholder="Product/checkout URL"><button onclick="addOffer()">Add verified offer</button></div><div id="offers"></div></div>
-<div class="card"><h3>Purchase queue</h3><p class="warn">Checkout remains user-confirmed: Prowler can stage/open the verified retailer page, but it does not fabricate checkout success or bypass retailer security.</p><div id="queue"></div><button onclick="openQueue()">Open queued purchase pages</button></div>
-<div class="card"><h3>Audit / backup</h3><button onclick="exportAll()">Export complete Prowler data</button><button onclick="clearAll()">Clear local data</button><div id="status" class="muted"></div></div>
-<script>
-const K='promoprowler.v7'; let db=JSON.parse(localStorage.getItem(K)||'{"items":[],"offers":[],"queue":[]}');
-const sources=[
-['Walmart','https://www.walmart.com/search?q={q}','all market home'],['Home Depot','https://www.homedepot.com/s/{q}','all home'],['Lowe’s','https://www.lowes.com/search?searchTerm={q}','all home'],['eBay','https://www.ebay.com/sch/i.html?_nkw={q}','all market'],['Amazon','https://www.amazon.com/s?k={q}','all market'],['Target','https://www.target.com/s?searchTerm={q}','all market'],['Best Buy','https://www.bestbuy.com/site/searchpage.jsp?st={q}','all market'],['Ace Hardware','https://www.acehardware.com/search?query={q}','all home'],['Menards','https://www.menards.com/main/search.html?search={q}','all home'],['Tractor Supply','https://www.tractorsupply.com/tsc/search/{q}','all home'],['Harbor Freight','https://www.harborfreight.com/search?q={q}','all home'],['Google Shopping','https://www.google.com/search?tbm=shop&q={q}','all market direct'],['Google exact/deep','https://www.google.com/search?q=%22{q}%22+price+buy','all direct']];
-function save(){localStorage.setItem(K,JSON.stringify(db));render()} function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function addItem(){let n=item.value.trim();if(!n)return;db.items.push({id:crypto.randomUUID(),name:n,qty:+qty.value||1,at:new Date().toISOString()});item.value='';save()}
-function delItem(id){db.items=db.items.filter(x=>x.id!==id);save()}
-function currentQuery(){return (document.getElementById('searchQuery').value||'').trim()}
-function searchUrls(q,sc){
- let chosen=sources.filter(x=>sc==='all'||x[2].includes(sc));
- let e=encodeURIComponent(q), exact=encodeURIComponent('\"'+q+'\"');
- let extra=[
- ['Google exact price','https://www.google.com/search?q='+exact+'+price+buy'],
- ['Google Shopping','https://www.google.com/search?tbm=shop&q='+e],
- ['Promo / coupon hunt','https://www.google.com/search?q='+e+'+promo+code+coupon+discount'],
- ['Manufacturer / direct','https://www.google.com/search?q='+exact+'+manufacturer+direct+buy'],
- ['Model / SKU exact','https://www.google.com/search?q='+exact+'+SKU+model+part+number']
- ];
- let rows=chosen.map(x=>[x[0],x[1].replaceAll('{q}',e)]);
- if(sc==='all'||sc==='direct') rows=rows.concat(extra); else if(sc==='market') rows=rows.concat(extra.slice(0,3));
- return rows;
-}
-function deepSearch(){let q=currentQuery();if(!q){links.innerHTML='<span class=warn>Type a product or choose a saved suggestion first.</span>';return} let rows=searchUrls(q,scope.value); links.innerHTML='<b>'+esc(q)+'</b><br>'+rows.map(x=>`<a target=_blank rel=\"noopener\" href=\"${x[1]}\">${esc(x[0])}</a>`).join(' • '); status.textContent='Deep-search routes ready: '+rows.length+'. Tap any source, or use AUTO HUNT + RANK.'}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PromoProwler Core v9</title>
+<style>
+:root{--bg:#07101f;--panel:#111c2f;--line:#2a3b55;--text:#e8eef8;--muted:#91a1b8;--ind:#6366f1;--green:#10b981;--amber:#f59e0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,sans-serif}
+header{position:sticky;top:0;z-index:4;background:#091426ee;border-bottom:1px solid var(--line);padding:12px 16px}
+.top{max-width:1250px;margin:auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand b{font-size:19px}.brand small{display:block;color:#8b9cff;font-family:monospace}.tabs{display:flex;gap:5px;background:#152238;padding:5px;border-radius:10px;flex-wrap:wrap}
+button,.btn{border:1px solid var(--line);background:#18263d;color:var(--text);padding:10px 12px;border-radius:8px;font-weight:650;cursor:pointer;text-decoration:none}
+button.primary{background:var(--ind);border-color:#7779ff}.green{background:#087e62!important;border-color:#13a47f!important}
+main{max-width:1250px;margin:auto;padding:15px;display:grid;grid-template-columns:360px 1fr;gap:15px}
+.panel{background:#0f1b2e;border:1px solid var(--line);border-radius:13px;padding:15px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 6px}p{color:var(--muted);line-height:1.45}label{display:block;color:#a9b7ca;font-size:11px;text-transform:uppercase;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px;border-radius:8px;border:1px solid var(--line);background:#07111f;color:var(--text);font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.hidden{display:none!important}.status{font:12px monospace;color:#9aa9bd}.good{color:#42d6a4}.warn{color:#ffc45e}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.metric{background:#091526;border:1px solid #21334c;border-radius:9px;padding:10px}.metric b{display:block;font-size:18px}
+table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;border-bottom:1px solid #203149;padding:9px;font-size:12px}th{color:#93a5bc}
+.scroll{overflow:auto}.console{height:165px;overflow:auto;background:#050b14;border:1px solid #1c2c42;padding:10px;border-radius:9px;font:11px monospace;color:#9eb0c7;white-space:pre-wrap}
+.card{border:1px solid #263954;background:#0b1728;border-radius:9px;padding:10px;margin:8px 0}.tiny{font-size:11px;color:#91a1b8}
+@media(max-width:800px){main{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.top{align-items:flex-start}.tabs{width:100%}.tabs button{flex:1;font-size:11px;padding:9px 5px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand"><b>◈ PromoProwler Core</b><small>v9 • live-search launcher + verified offer vault</small></div>
+<div class="tabs"><button onclick="tab('promo')">Promo Code Searcher</button><button onclick="tab('price')">Lowest Price Finder</button><button onclick="tab('list')">Shopping List (<span id="count">0</span>)</button></div></div></header>
+<main>
+<section>
+<div id="promoCfg" class="panel"><h2>Universal Promo Search</h2><p>Searches public promo/deal sources for the merchant you enter. Codes stay <b>unverified</b> until confirmed at the retailer.</p>
+<label>Merchant / URL</label><input id="merchant" placeholder="temu.com or Home Depot">
+<label>Product (optional)</label><input id="promoProduct" placeholder="4 inch TFT screen">
+<div class="actions"><button class="primary" onclick="promoHunt()">Discover Promos</button><button onclick="openMerchant()">Open Merchant</button></div></div>
 
-async function autoHunt(){let q=currentQuery();if(!q){status.textContent='Type a product first.';return;}status.textContent='Searching live sources…';try{let r=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})});let j=await r.json();for(let o of j.offers){db.offers.push({id:crypto.randomUUID(),merchant:o.merchant,product:o.product,price:o.price||0,ship:o.shipping||0,tax:o.tax||0,discount:o.discount||0,coupon:o.code||'',codeStatus:o.codeStatus||'unverified',sourceStatus:o.sourceStatus,url:o.url,total:o.price==null?999999:+((o.price||0)+(o.shipping||0)+(o.tax||0)-(o.discount||0)).toFixed(2),verifiedAt:new Date().toISOString()})}save();status.textContent='Live hunt complete. Unknown/blocked totals are not treated as winners.'}catch(e){status.textContent='Worker unavailable — run start.sh, then open http://127.0.0.1:8787';}}
-function addOffer(){let p=+price.value||0,s=+ship.value||0,t=+tax.value||0;if(!merchant.value.trim()||!product.value.trim()||!p)return;db.offers.push({id:crypto.randomUUID(),merchant:merchant.value.trim(),product:product.value.trim(),price:p,ship:s,tax:t,coupon:coupon.value.trim(),codeStatus:coupon.value.trim()?'user-verified':'none',sourceStatus:'user-captured',url:url.value.trim(),discount:0,total:+(p+s+t).toFixed(2),verifiedAt:new Date().toISOString()});['merchant','product','price','ship','tax','coupon','url'].forEach(id=>document.getElementById(id).value='');save()}
-function queueOffer(id){let o=db.offers.find(x=>x.id===id);if(o&&!db.queue.some(x=>x.id===id))db.queue.push(o);save()} function dq(id){db.queue=db.queue.filter(x=>x.id!==id);save()} function openQueue(){db.queue.forEach((o,i)=>{if(o.url)setTimeout(()=>window.open(o.url,'_blank','noopener'),i*150)})}
-function download(name,obj){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)} function exportList(){download('prowler-shopping-list.json',{version:8,items:db.items})} function exportAll(){download('prowler-backup.json',{version:8,exportedAt:new Date().toISOString(),...db})}
-importer.onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(Array.isArray(x.items)){db.items=x.items;save();status.textContent='List imported.'}}catch{status.textContent='Import failed: invalid JSON.'}}
-function clearAll(){if(confirm('Clear Prowler local data?')){db={items:[],offers:[],queue:[]};save()}}
-function render(){list.innerHTML=db.items.length?db.items.map(x=>`<div class=result>${esc(x.name)} ×${x.qty} <button onclick="delItem('${x.id}')">Delete</button></div>`).join(''):'<span class=muted>No items yet.</span>';savedItems.innerHTML=db.items.map(x=>`<option value="${esc(x.name)}"></option>`).join('');let sorted=[...db.offers].sort((a,b)=>a.total-b.total);offers.innerHTML=sorted.length?sorted.map((o,i)=>`<div class=result><b>${i===0?'★ ':''}${esc(o.merchant)}</b> — ${esc(o.product)} <span class=pill>$${o.total.toFixed(2)} delivered</span><br><span class=muted>$${o.price.toFixed(2)} + $${o.ship.toFixed(2)} shipping + $${o.tax.toFixed(2)} tax/fees ${o.coupon?' • '+esc(o.coupon):''}</span> <button onclick="queueOffer('${o.id}')">Queue</button>${o.url?` <a target=_blank href="${esc(o.url)}">Open</a>`:''}</div>`).join(''):'<span class=muted>No verified offers captured.</span>';queue.innerHTML=db.queue.length?db.queue.map(o=>`<div class=result>${esc(o.merchant)} — ${esc(o.product)} — $${o.total.toFixed(2)} <button onclick="dq('${o.id}')">Remove</button></div>`).join(''):'<span class=muted>Queue empty.</span>';status.textContent=`Saved locally: ${db.items.length} items, ${db.offers.length} verified offers, ${db.queue.length} queued.`} render();
-</script></main></body></html>
+<div id="priceCfg" class="panel hidden"><h2>Omni-Channel Price Searcher</h2><p>Type anything—saved-list selection is never required.</p>
+<label>Product / model / SKU</label><input id="query" placeholder="ST7796S 4 inch TFT">
+<div class="row"><div><label>ZIP (reference)</label><input id="zip" placeholder="28752"></div><div><label>Scope</label><select id="scope"><option value="all">All sources</option><option value="home">Home/repair</option><option value="market">Marketplaces</option></select></div></div>
+<div class="actions"><button class="green" onclick="autoHunt()">AUTO HUNT</button><button onclick="shopping()">Google Shopping</button></div></div>
+
+<div id="listCfg" class="panel hidden"><h2>Shopping List & Checkout Queue</h2><p>Saved locally on this iPhone/browser. Prowler prepares the retailer link; you confirm checkout.</p>
+<label>Item</label><input id="liName" placeholder="Item name"><div class="actions"><button class="primary" onclick="addItem()">Add Item</button><button onclick="backup()">Backup JSON</button><label class="btn" style="margin:0;text-transform:none">Restore<input id="restore" type="file" accept=".json" hidden onchange="restoreData(this)"></label></div></div>
+
+<div class="panel"><h2>Offer Capture</h2><p>Record a price you actually see. Unknown shipping/tax remains unknown and is never treated as $0.</p>
+<label>Merchant</label><input id="oMerchant"><label>Product</label><input id="oProduct">
+<div class="row"><div><label>Item price</label><input id="oPrice" type="number" step=".01"></div><div><label>Promo savings</label><input id="oSave" type="number" step=".01" value="0"></div></div>
+<div class="row"><div><label>Shipping</label><input id="oShip" type="number" step=".01" placeholder="unknown"></div><div><label>Tax/fees</label><input id="oTax" type="number" step=".01" placeholder="unknown"></div></div>
+<label>Promo code</label><input id="oCode"><label>Product / checkout URL</label><input id="oUrl" type="url">
+<div class="actions"><button class="green" onclick="saveOffer()">Save Verified Offer</button></div></div>
+</section>
+
+<section>
+<div class="grid"><div class="metric"><span class="tiny">Search sources</span><b id="mSources">0</b></div><div class="metric"><span class="tiny">Saved offers</span><b id="mOffers">0</b></div><div class="metric"><span class="tiny">Complete totals</span><b id="mComplete">0</b></div><div class="metric"><span class="tiny">Best verified total</span><b id="mBest">—</b></div></div>
+
+<div class="panel"><h2 id="resultsTitle">Search Launchpad</h2><div id="results"><p>Enter a product or merchant and start a search.</p></div></div>
+
+<div class="panel"><h2>Verified Offer Ranking</h2><div class="scroll"><table><thead><tr><th>Merchant</th><th>Product</th><th>Code</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="offers"></tbody></table></div></div>
+
+<div class="panel"><h2>Shopping List</h2><div id="items"></div></div>
+<div class="panel"><h2>Activity</h2><div class="console" id="log"></div></div>
+</section>
+</main>
+<script>
+const KEY='promoprowler.v9';
+let state=JSON.parse(localStorage.getItem(KEY)||'{"items":[],"offers":[]}');
+const SOURCES=[
+['Google Shopping','https://www.google.com/search?tbm=shop&q='],
+['Walmart','https://www.walmart.com/search?q='],['Home Depot','https://www.homedepot.com/s/'],
+["Lowe's",'https://www.lowes.com/search?searchTerm='],['eBay','https://www.ebay.com/sch/i.html?_nkw='],
+['Amazon','https://www.amazon.com/s?k='],['Target','https://www.target.com/s?searchTerm='],
+['Best Buy','https://www.bestbuy.com/site/searchpage.jsp?st='],['Ace','https://www.acehardware.com/search?query='],
+['Menards','https://www.menards.com/main/search.html?search='],['Tractor Supply','https://www.tractorsupply.com/tsc/search/'],
+['Harbor Freight','https://www.harborfreight.com/search?q=']
+];
+function log(s){let e=document.getElementById('log');e.textContent+='['+new Date().toLocaleTimeString()+'] '+s+'\n';e.scrollTop=e.scrollHeight}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function tab(x){promoCfg.classList.toggle('hidden',x!='promo');priceCfg.classList.toggle('hidden',x!='price');listCfg.classList.toggle('hidden',x!='list')}
+function allowedSources(){let s=scope.value;if(s==='home')return SOURCES.filter(x=>["Google Shopping","Walmart","Home Depot","Lowe's","Ace","Menards","Tractor Supply","Harbor Freight"].includes(x[0]));if(s==='market')return SOURCES.filter(x=>["Google Shopping","Walmart","eBay","Amazon","Target","Best Buy"].includes(x[0]));return SOURCES}
+function makeCards(arr,title){resultsTitle.textContent=title;results.innerHTML=arr.map(x=>`<div class="card"><b>${esc(x[0])}</b><div class="tiny">${esc(x[2]||'Live search')}</div><div class="actions"><a class="btn" target="_blank" rel="noopener" href="${x[1]}">Open Search ↗</a></div></div>`).join('')}
+function autoHunt(){let q=query.value.trim();if(!q){query.focus();return}let arr=allowedSources().map(x=>[x[0],x[1]+encodeURIComponent(q),'Live retailer/search result — verify item, shipping and final total']);makeCards(arr,'AUTO HUNT • '+q);mSources.textContent=arr.length;log('Auto Hunt prepared '+arr.length+' live searches for: '+q)}
+function shopping(){let q=query.value.trim();if(!q)return;window.open('https://www.google.com/search?tbm=shop&q='+encodeURIComponent(q),'_blank')}
+function promoHunt(){let m=merchant.value.trim(),p=promoProduct.value.trim();if(!m){merchant.focus();return}let q=[m,p,'promo code coupon deal'].filter(Boolean).join(' ');let arr=[
+['Google promo search','https://www.google.com/search?q='+encodeURIComponent(q),'Public web search'],
+['RetailMeNot search','https://www.google.com/search?q='+encodeURIComponent('site:retailmenot.com '+q),'Public coupon source search'],
+['Merchant promotions','https://www.google.com/search?q='+encodeURIComponent(m+' '+p+' site:'+domain(m)+' promotion coupon'),'Merchant-domain promotion search'],
+['Google Shopping deals','https://www.google.com/search?tbm=shop&q='+encodeURIComponent([p,m,'deal'].filter(Boolean).join(' ')),'Shopping/deal comparison']
+];makeCards(arr,'PROMO HUNT • '+m);mSources.textContent=arr.length;log('Promo hunt prepared public searches for '+m+'. Codes are unverified until retailer confirmation.')}
+function domain(s){try{return new URL(s.includes('://')?s:'https://'+s).hostname.replace(/^www\./,'')}catch(e){return s.replace(/[^a-z0-9.-]/gi,'')}}
+function openMerchant(){let m=merchant.value.trim();if(!m)return;window.open(m.includes('://')?m:'https://'+m,'_blank')}
+function addItem(){let n=liName.value.trim();if(!n)return;state.items.push({id:Date.now(),name:n});liName.value='';save();log('Saved shopping-list item: '+n)}
+function delItem(id){state.items=state.items.filter(x=>x.id!==id);save()}
+function huntItem(name){tab('price');query.value=name;autoHunt()}
+function num(id){let v=document.getElementById(id).value.trim();return v===''?null:Number(v)}
+function saveOffer(){let price=num('oPrice');if(!oMerchant.value.trim()||!oProduct.value.trim()||price===null||!Number.isFinite(price))return alert('Merchant, product and item price are required.');let ship=num('oShip'),tax=num('oTax'),sav=num('oSave')||0;let complete=ship!==null&&tax!==null;let total=complete?price+ship+tax-sav:null;state.offers.push({id:Date.now(),merchant:oMerchant.value.trim(),product:oProduct.value.trim(),price,ship,tax,sav,code:oCode.value.trim(),url:oUrl.value.trim(),complete,total,ts:new Date().toISOString()});save();log('Saved verified offer from '+oMerchant.value.trim()+(complete?' total $'+total.toFixed(2):' with incomplete delivered total'))}
+function delOffer(id){state.offers=state.offers.filter(x=>x.id!==id);save()}
+function openOffer(id){let x=state.offers.find(x=>x.id===id);if(x&&x.url)window.open(x.url,'_blank')}
+function backup(){let b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PromoProwler-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function restoreData(i){let f=i.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.items)||!Array.isArray(d.offers))throw 0;state=d;save();log('Backup restored')}catch(e){alert('Invalid PromoProwler backup')}};r.readAsText(f)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){count.textContent=state.items.length;mOffers.textContent=state.offers.length;let complete=state.offers.filter(x=>x.complete&&Number.isFinite(x.total)).sort((a,b)=>a.total-b.total);mComplete.textContent=complete.length;mBest.textContent=complete.length?'$'+complete[0].total.toFixed(2):'—';items.innerHTML=state.items.length?state.items.map(x=>`<div class="card"><b>${esc(x.name)}</b><div class="actions"><button onclick='huntItem(${JSON.stringify(x.name)})'>Hunt</button><button onclick="delItem(${x.id})">Delete</button></div></div>`).join(''):'<p>No saved items yet.</p>';let ordered=[...complete,...state.offers.filter(x=>!x.complete)];offers.innerHTML=ordered.map(x=>`<tr><td>${esc(x.merchant)}</td><td>${esc(x.product)}</td><td>${esc(x.code||'—')}</td><td>${x.complete?'$'+x.total.toFixed(2):'—'}</td><td class="${x.complete?'good':'warn'}">${x.complete?'Verified complete':'Needs shipping/tax'}</td><td><button onclick="openOffer(${x.id})">Checkout</button> <button onclick="delOffer(${x.id})">×</button></td></tr>`).join('')||'<tr><td colspan="6">No verified offers saved.</td></tr>'}
+render();log('PromoProwler v9 ready. Live searches use retailer/search pages; no generated prices or fake promo validations.');
+</script></body></html>
