@@ -1,14 +1,13 @@
-# PromoProwler Intelligence Core
+# PromoProwler Core v8
 
-Self-contained static GitHub Pages project recovered from the supplied HTML source.
+Open-style PromoProwler UI with fixed free-text Deep Search, saved-item suggestions, broad retailer/direct/coupon search routes, local live-source worker, delivered-cost ranking, saved shopping list/import/export, verified offer capture, and user-confirmed purchase queue.
 
-## GitHub setup
+## Run full worker mode
+```bash
+./start.sh
+```
+Then open http://127.0.0.1:8787
 
-1. Upload the contents of this ZIP to a GitHub repository.
-2. Use the `main` branch.
-3. Open **Actions** and allow the Pages workflow to run.
-4. In **Settings → Pages**, use **GitHub Actions** as the source if GitHub asks.
+`index.html` also works as a static front end for Deep Search/list/offer/queue functions. AUTO HUNT requires the local worker.
 
-The project has no Node/Gradle/Python build step. `index.html` is the site entry point.
-
-The original interface uses the Tailwind CSS CDN and Google Fonts, so those two resources remain external just as they were in the supplied HTML.
+No prices, promo success, shipping, tax, or checkout success are fabricated. Unknown/blocked sources stay unknown.
